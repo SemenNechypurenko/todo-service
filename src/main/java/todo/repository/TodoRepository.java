@@ -10,4 +10,8 @@ public interface TodoRepository extends JpaRepository<TodoItem, Long> {
 
     List<TodoItem> findByStatusNot(TodoStatus status);
 
+    /**
+     * Find all todos with specific status (used for NOT_DONE)
+     */
+    List<TodoItem> findByStatus(TodoStatus status);
 }
