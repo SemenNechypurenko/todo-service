@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import todo.dto.TodoRequest;
 import todo.dto.TodoResponse;
+import todo.exception.InvalidDueDateException;
+import todo.exception.PastDueModificationException;
+import todo.exception.TodoNotFoundException;
 import todo.model.TodoItem;
 import todo.model.TodoStatus;
 import todo.repository.TodoRepository;
@@ -29,7 +32,8 @@ public class TodoService {
         LocalDateTime now = LocalDateTime.now();
 
         if (request.getDueDate() != null && request.getDueDate().isBefore(now)) {
-            throw new IllegalArgumentException("dueDate must be in the future");
+            throw new InvalidDueDateException();
+
         }
 
         TodoItem todo = TodoItem.builder()
@@ -136,7 +140,7 @@ public class TodoService {
     private TodoItem getTodoOrThrow(Long id) {
 
         return todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+                .orElseThrow(() -> new TodoNotFoundException(id));
     }
 
     /**
@@ -167,7 +171,7 @@ public class TodoService {
 
             log.warn("Attempt to modify PAST_DUE {}", todo.getId());
 
-            throw new RuntimeException("Cannot modify PAST_DUE todo");
+            throw new PastDueModificationException(todo.getId());
         }
     }
 

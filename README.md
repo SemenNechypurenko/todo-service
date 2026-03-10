@@ -19,6 +19,11 @@ List of assumptions made during implementation.
 ## How to Run Tests
 ...
 
+Tests cover:
+- business logic of the service layer
+- REST controller behavior
+- error handling scenarios
+
 ## How to Run the Service
 ...
 
