@@ -1,0 +1,15 @@
+target/
+.idea/
+*.iml
+*.log
+.DS_Store
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+out/
+
+# H2
+*.mv.db
+*.trace.db
