@@ -1,4 +1,9 @@
 package todo.model;
 
-public class TodoStatus {
+public enum TodoStatus {
+
+    NOT_DONE,
+    DONE,
+    PAST_DUE
+
 }
