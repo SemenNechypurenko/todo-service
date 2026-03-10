@@ -12,7 +12,6 @@ import todo.repository.TodoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
 
     /**
-     * Create new todo
+     * Creates a new todo.
      */
     @Transactional
     public TodoResponse createTodo(TodoRequest request) {
@@ -48,9 +47,7 @@ public class TodoService {
     }
 
     /**
-     * Get todos
-     * default -> NOT_DONE only
-     * all=true -> return all
+     * Returns todos.
      */
     public List<TodoResponse> getTodos(boolean all) {
 
@@ -62,16 +59,15 @@ public class TodoService {
 
         return todos.stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
-     * Get todo by id
+     * Returns single todo.
      */
     public TodoResponse getTodoById(Long id) {
 
-        TodoItem todo = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+        TodoItem todo = getTodoOrThrow(id);
 
         updatePastDueStatus(todo);
 
@@ -79,14 +75,14 @@ public class TodoService {
     }
 
     /**
-     * Update description
+     * Updates description.
      */
     @Transactional
     public TodoResponse updateDescription(Long id, String description) {
 
-        TodoItem todo = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+        TodoItem todo = getTodoOrThrow(id);
 
+        updatePastDueStatus(todo);
         forbidPastDue(todo);
 
         todo.setDescription(description);
@@ -97,14 +93,14 @@ public class TodoService {
     }
 
     /**
-     * Mark as DONE
+     * Marks todo DONE.
      */
     @Transactional
     public TodoResponse markDone(Long id) {
 
-        TodoItem todo = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+        TodoItem todo = getTodoOrThrow(id);
 
+        updatePastDueStatus(todo);
         forbidPastDue(todo);
 
         todo.setStatus(TodoStatus.DONE);
@@ -116,14 +112,14 @@ public class TodoService {
     }
 
     /**
-     * Mark as NOT_DONE
+     * Marks todo NOT_DONE.
      */
     @Transactional
     public TodoResponse markNotDone(Long id) {
 
-        TodoItem todo = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found"));
+        TodoItem todo = getTodoOrThrow(id);
 
+        updatePastDueStatus(todo);
         forbidPastDue(todo);
 
         todo.setStatus(TodoStatus.NOT_DONE);
@@ -135,13 +131,25 @@ public class TodoService {
     }
 
     /**
-     * Update status to PAST_DUE if needed
+     * Retrieves todo or throws exception.
+     */
+    private TodoItem getTodoOrThrow(Long id) {
+
+        return todoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Todo not found"));
+    }
+
+    /**
+     * Updates status to PAST_DUE if needed.
      */
     private void updatePastDueStatus(TodoItem todo) {
 
-        if (todo.getStatus() != TodoStatus.DONE
-                && todo.getDueDate() != null
-                && todo.getDueDate().isBefore(LocalDateTime.now())) {
+        if (todo.getStatus() == TodoStatus.DONE) {
+            return;
+        }
+
+        if (todo.getDueDate() != null &&
+                todo.getDueDate().isBefore(LocalDateTime.now())) {
 
             todo.setStatus(TodoStatus.PAST_DUE);
             todoRepository.save(todo);
@@ -151,18 +159,20 @@ public class TodoService {
     }
 
     /**
-     * Prevent modification of PAST_DUE
+     * Prevent modification of past due todos.
      */
     private void forbidPastDue(TodoItem todo) {
 
         if (todo.getStatus() == TodoStatus.PAST_DUE) {
+
             log.warn("Attempt to modify PAST_DUE {}", todo.getId());
+
             throw new RuntimeException("Cannot modify PAST_DUE todo");
         }
     }
 
     /**
-     * Entity -> DTO
+     * Maps entity to DTO.
      */
     private TodoResponse mapToResponse(TodoItem todo) {
 

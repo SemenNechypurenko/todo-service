@@ -9,6 +9,9 @@ import todo.service.TodoService;
 
 import java.util.List;
 
+/**
+ * REST controller exposing endpoints for managing Todo items.
+ */
 @RestController
 @RequestMapping("/todos")
 @RequiredArgsConstructor
@@ -18,61 +21,74 @@ public class TodoController {
     private final TodoService todoService;
 
     /**
-     * Add new todo item
+     * Creates a new todo item.
      */
     @PostMapping
     public TodoResponse createTodo(@RequestBody TodoRequest request) {
-        log.info("Create todo request");
+
+        log.info("Received request to create todo");
+
         return todoService.createTodo(request);
     }
 
     /**
-     * Get todos
-     * default -> only NOT_DONE
-     * all=true -> return all
+     * Retrieves todo items.
+     *
+     * default -> NOT_DONE
+     * all=true -> all items
      */
     @GetMapping
-    public List<TodoResponse> getTodos(@RequestParam(defaultValue = "false") boolean all) {
-        log.info("Get todos request all={}", all);
+    public List<TodoResponse> getTodos(
+            @RequestParam(defaultValue = "false") boolean all) {
+
+        log.info("Received request to get todos (all={})", all);
+
         return todoService.getTodos(all);
     }
 
     /**
-     * Get single todo
+     * Retrieves a single todo by id.
      */
     @GetMapping("/{id}")
     public TodoResponse getTodo(@PathVariable Long id) {
-        log.info("Get todo {}", id);
+
+        log.info("Received request to get todo {}", id);
+
         return todoService.getTodoById(id);
     }
 
     /**
-     * Update description
+     * Updates description.
      */
     @PatchMapping("/{id}/description")
     public TodoResponse updateDescription(
             @PathVariable Long id,
             @RequestParam String description) {
 
-        log.info("Update description for {}", id);
+        log.info("Received request to update description for todo {}", id);
+
         return todoService.updateDescription(id, description);
     }
 
     /**
-     * Mark todo as DONE
+     * Marks todo as DONE.
      */
     @PatchMapping("/{id}/done")
     public TodoResponse markDone(@PathVariable Long id) {
-        log.info("Mark {} as DONE", id);
+
+        log.info("Received request to mark todo {} as DONE", id);
+
         return todoService.markDone(id);
     }
 
     /**
-     * Mark todo as NOT_DONE
+     * Marks todo as NOT_DONE.
      */
     @PatchMapping("/{id}/undone")
     public TodoResponse markNotDone(@PathVariable Long id) {
-        log.info("Mark {} as NOT_DONE", id);
+
+        log.info("Received request to mark todo {} as NOT_DONE", id);
+
         return todoService.markNotDone(id);
     }
 }
