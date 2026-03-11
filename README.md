@@ -2,21 +2,25 @@
 
 ## Service Description
 
-Todo Service is a backend application providing a simple REST API to manage todo items.
-It allows creating, updating, marking as done/undone, and retrieving todos.
+Todo Service is a simple Spring Boot backend that provides a REST API to manage todo items.
 
-The service automatically marks items as PAST_DUE when their due date has passed,
-using lazy evaluation (status is updated when an item is accessed).
+The API allows you to:
+- create todos
+- retrieve todos
+- update descriptions
+- mark items as done or undone
+
+If a todo passes its due date, the service automatically marks it as **PAST_DUE** when the item is accessed.
 
 ---
 
 ## Assumptions
 
-- Each todo item has a description, status, creation timestamp, optional due date, and completion timestamp.
-- Todos with status PAST_DUE cannot be modified.
-- Status changes to PAST_DUE occur lazily upon fetching or updating the todo.
+- Each todo contains a description, status, creation time, optional due date, and completion time.
+- Todos with status **PAST_DUE** cannot be modified.
+- Status **PAST_DUE** is applied lazily when the todo is fetched or updated.
 - No authentication is required.
-- The service runs with an in-memory H2 database.
+- The service uses an **in-memory H2 database**.
 
 ---
 
@@ -32,37 +36,45 @@ using lazy evaluation (status is updated when an item is accessed).
 
 ## How to Build
 
-Build the project using Maven:
+Build the project with Maven:
 
 ```bash
 mvn clean package
 ```
+
+This will compile the code and run all tests.
+
 ---
-This will compile the code and run unit tests.
 
 ## How to Run Tests
 
-Unit and integration tests are included to cover:
+The project includes unit and integration tests for:
 
-- Service layer business logic
-- Controller behavior
-- Error handling (invalid input, PAST_DUE modifications, not found items)
+- service business logic
+- controller endpoints
+- validation and error handling
 
-Run tests via Maven:
+Run tests with:
 
+```bash
 mvn test
+```
 
 ---
 
 ## How to Run the Service
 
-The service is dockerized. Run with Docker Compose:
+The application can be started using Docker Compose:
 
+```bash
 docker-compose up
+```
 
 The API will be available at:
 
+```
 http://localhost:8080/todos
+```
 
 ---
 
@@ -70,35 +82,38 @@ http://localhost:8080/todos
 
 Base URL:
 
+```
 /todos
-
-The service exposes endpoints to create, read, update, and manage todo items.
+```
 
 ---
 
-# 1. Create a new todo item
+## 1. Create Todo
 
-POST /todos
+**POST /todos**
 
-Description: Creates a new todo item with a description and optional due date.
+Creates a new todo item.
 
-Request Body:
+Request body:
 
+```json
 {
-  "description": "string",
+  "description": "Buy milk",
   "dueDate": "2026-03-12T10:00:00"
 }
+```
 
 Notes:
 
-- description is required
-- dueDate is optional
-- dueDate must be in the future if provided
+- `description` is required
+- `dueDate` is optional
+- `dueDate` must be in the future
 
 Response:
 
-Status: 201 CREATED
+**201 CREATED**
 
+```json
 {
   "id": 1,
   "description": "Buy milk",
@@ -107,156 +122,170 @@ Status: 201 CREATED
   "dueDate": "2026-03-12T10:00:00",
   "doneAt": null
 }
+```
 
 ---
 
-# 2. Get todo items
+## 2. Get Todos
 
-GET /todos?all=false
+**GET /todos?all=false**
 
-Description: Retrieves todo items.
+Returns todo items.
 
 Behavior:
 
-- Default (all=false) → returns only items with status NOT_DONE
-- all=true → returns all items, including DONE and PAST_DUE
-
-Query Parameters:
-
-Parameter | Type | Default | Description
---------- | ---- | ------- | -----------
-all | boolean | false | If true, returns all items
+- `all=false` (default) → returns only **NOT_DONE** items
+- `all=true` → returns **all items**
 
 Response:
 
-Status: 200 OK
+**200 OK**
 
+```json
 [
   {
     "id": 1,
     "description": "Buy milk",
     "status": "NOT_DONE",
     "createdAt": "2026-03-10T12:00:00",
-    "dueDate": "2026-03-12T10:00:00",
+    "dueDate": "2030-03-12T10:00:00",
     "doneAt": null
   }
 ]
+```
 
 ---
 
-# 3. Get todo item details
+## 3. Get Todo by Id
 
-GET /todos/{id}
+**GET /todos/{id}**
 
-Description: Retrieves detailed information about a specific todo item.
-
-Path Parameters:
-
-Parameter | Type | Description
---------- | ---- | -----------
-id | long | Unique identifier of the todo item
+Returns details of a specific todo.
 
 Response:
 
-Status: 200 OK
+**200 OK**
 
+```json
 {
   "id": 1,
   "description": "Buy milk",
   "status": "NOT_DONE",
   "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2026-03-12T10:00:00",
+  "dueDate": "2030-03-12T10:00:00",
   "doneAt": null
 }
+```
 
 ---
 
-# 4. Update todo description
+## 4. Update Description
 
-PATCH /todos/{id}/description
+**PATCH /todos/{id}/description**
 
-Description: Updates the description of an existing todo item.
+Updates the description of a todo.
 
-Restrictions:
+Request body:
 
-Items with status PAST_DUE cannot be modified.
-
-Query Parameters:
-
-Parameter | Type | Description
---------- | ---- | -----------
-description | string | New description
+```json
+{
+  "description": "Buy milk and bread"
+}
+```
 
 Response:
 
-Status: 200 OK
-
-{
-  "id": 1,
-  "description": "Buy bread",
-  "status": "NOT_DONE",
-  "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2026-03-12T10:00:00",
-  "doneAt": null
-}
+**200 OK**
 
 ---
 
-# 5. Mark todo as DONE
+## 5. Mark Todo as DONE
 
-PATCH /todos/{id}/done
+**PATCH /todos/{id}/done**
 
-Description: Marks a todo item as DONE and sets the completion timestamp.
-
-Restrictions:
-
-Items with status PAST_DUE cannot be modified.
+Marks the todo as completed.
 
 Response:
 
-Status: 200 OK
-
-{
-  "id": 1,
-  "description": "Buy bread",
-  "status": "DONE",
-  "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2026-03-12T10:00:00",
-  "doneAt": "2026-03-10T12:30:00"
-}
+**200 OK**
 
 ---
 
-# 6. Mark todo as NOT_DONE
+## 6. Mark Todo as NOT_DONE
 
-PATCH /todos/{id}/undone
+**PATCH /todos/{id}/undone**
 
-Description: Marks a todo item as NOT_DONE and clears the completion timestamp.
-
-Restrictions:
-
-Items with status PAST_DUE cannot be modified.
+Marks the todo as not completed.
 
 Response:
 
-Status: 200 OK
-
-{
-  "id": 1,
-  "description": "Buy bread",
-  "status": "NOT_DONE",
-  "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2026-03-12T10:00:00",
-  "doneAt": null
-}
+**200 OK**
 
 ---
 
-# 7. Error Responses
+## 📝 Postman Collection
 
-Status | Description
------- | -----------
-400 | Validation error (missing description, past dueDate)
-404 | Todo not found
-409 | Attempt to modify a PAST_DUE todo
+A Postman collection is included in the repository to simplify API testing.
 
+File:
+
+```
+postman_collection.json
+```
+
+### How to Use
+
+1. Open **Postman**
+2. Click **Import**
+3. Select `todo-service.postman_collection.json`
+
+The collection contains requests for all endpoints:
+
+- Create Todo – `POST /todos`
+- Get all Todos – `GET /todos?all=true`
+- Get Todo by Id – `GET /todos/{id}`
+- Update description – `PATCH /todos/{id}/description`
+- Mark as DONE – `PATCH /todos/{id}/done`
+- Mark as NOT_DONE – `PATCH /todos/{id}/undone`
+
+Run requests against:
+
+```
+http://localhost:8080
+```
+
+---
+
+## 🧪 Built-in Tests
+
+Each request in the Postman collection contains automated tests:
+
+- HTTP status validation (200, 201)
+- response fields validation (`id`, `status`, `doneAt`)
+- business logic checks:
+    - new todos are **NOT_DONE**
+    - `doneAt` is `null` for incomplete todos
+
+---
+
+## ⚡ Running All Tests
+
+You can run all requests using **Postman Runner**:
+
+1. Open the collection
+2. Click **Run**
+3. Execute all requests
+
+Postman will run all tests and display the results.
+
+---
+
+💡 **Tip**
+
+Make sure the Spring Boot application is running at:
+
+```
+http://localhost:8080
+```
+
+before executing the collection.
