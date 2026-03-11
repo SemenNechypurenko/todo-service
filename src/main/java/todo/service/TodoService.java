@@ -16,15 +16,29 @@ import todo.repository.TodoRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Service layer for managing Todo items.
+ * <p>
+ * Provides methods for creating, updating, retrieving, and marking todos as DONE or NOT_DONE.
+ * Handles business rules such as lazy PAST_DUE status updates and preventing modification of past-due todos.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TodoService {
 
+    /** Repository for accessing TodoItem entities in the database. */
     private final TodoRepository todoRepository;
 
     /**
-     * Creates a new todo.
+     * Creates a new todo item.
+     * <p>
+     * Sets status to NOT_DONE and records the creation timestamp.
+     * Validates that the optional dueDate is in the future.
+     *
+     * @param request the DTO containing description and optional dueDate
+     * @return the created TodoResponse
+     * @throws InvalidDueDateException if dueDate is in the past
      */
     @Transactional
     public TodoResponse createTodo(TodoRequest request) {
@@ -33,7 +47,6 @@ public class TodoService {
 
         if (request.getDueDate() != null && request.getDueDate().isBefore(now)) {
             throw new InvalidDueDateException();
-
         }
 
         TodoItem todo = TodoItem.builder()
@@ -51,7 +64,12 @@ public class TodoService {
     }
 
     /**
-     * Returns todos.
+     * Retrieves todos from the database.
+     * <p>
+     * Applies lazy update to PAST_DUE status if needed.
+     *
+     * @param all if true, returns all todos; otherwise, only NOT_DONE todos
+     * @return list of TodoResponse objects
      */
     public List<TodoResponse> getTodos(boolean all) {
 
@@ -59,6 +77,7 @@ public class TodoService {
                 ? todoRepository.findAll()
                 : todoRepository.findByStatus(TodoStatus.NOT_DONE);
 
+        // Update PAST_DUE status lazily
         todos.forEach(this::updatePastDueStatus);
 
         return todos.stream()
@@ -67,7 +86,13 @@ public class TodoService {
     }
 
     /**
-     * Returns single todo.
+     * Retrieves a single todo by ID.
+     * <p>
+     * Updates PAST_DUE status if necessary.
+     *
+     * @param id the ID of the todo
+     * @return the corresponding TodoResponse
+     * @throws TodoNotFoundException if no todo exists with the given ID
      */
     public TodoResponse getTodoById(Long id) {
 
@@ -79,7 +104,14 @@ public class TodoService {
     }
 
     /**
-     * Updates description.
+     * Updates the description of a todo.
+     * <p>
+     * Throws exception if the todo is PAST_DUE.
+     *
+     * @param id          the ID of the todo
+     * @param description the new description
+     * @return the updated TodoResponse
+     * @throws PastDueModificationException if the todo is PAST_DUE
      */
     @Transactional
     public TodoResponse updateDescription(Long id, String description) {
@@ -97,7 +129,13 @@ public class TodoService {
     }
 
     /**
-     * Marks todo DONE.
+     * Marks a todo as DONE.
+     * <p>
+     * Throws exception if the todo is PAST_DUE.
+     *
+     * @param id the ID of the todo
+     * @return the updated TodoResponse with status DONE
+     * @throws PastDueModificationException if the todo is PAST_DUE
      */
     @Transactional
     public TodoResponse markDone(Long id) {
@@ -116,7 +154,13 @@ public class TodoService {
     }
 
     /**
-     * Marks todo NOT_DONE.
+     * Marks a todo as NOT_DONE.
+     * <p>
+     * Throws exception if the todo is PAST_DUE.
+     *
+     * @param id the ID of the todo
+     * @return the updated TodoResponse with status NOT_DONE
+     * @throws PastDueModificationException if the todo is PAST_DUE
      */
     @Transactional
     public TodoResponse markNotDone(Long id) {
@@ -135,16 +179,23 @@ public class TodoService {
     }
 
     /**
-     * Retrieves todo or throws exception.
+     * Retrieves a todo by ID or throws a TodoNotFoundException if not found.
+     *
+     * @param id the ID of the todo
+     * @return the corresponding TodoItem
+     * @throws TodoNotFoundException if no todo exists with the given ID
      */
     private TodoItem getTodoOrThrow(Long id) {
-
         return todoRepository.findById(id)
                 .orElseThrow(() -> new TodoNotFoundException(id));
     }
 
     /**
-     * Updates status to PAST_DUE if needed.
+     * Lazily updates the status of a todo to PAST_DUE if its due date has passed.
+     * <p>
+     * Does nothing if the todo is already DONE or has no due date.
+     *
+     * @param todo the TodoItem to check and update
      */
     private void updatePastDueStatus(TodoItem todo) {
 
@@ -163,7 +214,10 @@ public class TodoService {
     }
 
     /**
-     * Prevent modification of past due todos.
+     * Prevents modification of a todo that is PAST_DUE.
+     *
+     * @param todo the TodoItem to check
+     * @throws PastDueModificationException if the todo is PAST_DUE
      */
     private void forbidPastDue(TodoItem todo) {
 
@@ -176,10 +230,12 @@ public class TodoService {
     }
 
     /**
-     * Maps entity to DTO.
+     * Maps a TodoItem entity to a TodoResponse DTO.
+     *
+     * @param todo the TodoItem entity
+     * @return the corresponding TodoResponse
      */
     private TodoResponse mapToResponse(TodoItem todo) {
-
         return TodoResponse.builder()
                 .id(todo.getId())
                 .description(todo.getDescription())

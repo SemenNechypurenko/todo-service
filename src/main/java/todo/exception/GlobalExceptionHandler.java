@@ -7,10 +7,24 @@ import todo.dto.ErrorResponse;
 
 import java.time.LocalDateTime;
 
+/**
+ * Global exception handler for the Todo Service.
+ * <p>
+ * Catches both specific and unexpected exceptions, returning
+ * appropriate HTTP status codes and structured error responses.
+ * Logs warnings and errors for debugging purposes.
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
+    /**
+     * Handles cases where a todo with the specified ID is not found.
+     * Returns HTTP 404 NOT_FOUND.
+     *
+     * @param ex the exception thrown when a todo is not found
+     * @return a structured error response
+     */
     @ExceptionHandler(TodoNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(TodoNotFoundException ex) {
@@ -24,6 +38,13 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    /**
+     * Handles attempts to modify todos that are past due (PAST_DUE status).
+     * Returns HTTP 409 CONFLICT.
+     *
+     * @param ex the exception thrown when trying to modify a past due todo
+     * @return a structured error response
+     */
     @ExceptionHandler(PastDueModificationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handlePastDue(PastDueModificationException ex) {
@@ -37,9 +58,18 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    /**
+     * Handles invalid due date exceptions, such as due dates in the past
+     * or invalid date formats. Returns HTTP 400 BAD_REQUEST.
+     *
+     * @param ex the exception thrown when a due date is invalid
+     * @return a structured error response
+     */
     @ExceptionHandler(InvalidDueDateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidDueDate(InvalidDueDateException ex) {
+
+        log.warn("Invalid due date: {}", ex.getMessage());
 
         return ErrorResponse.builder()
                 .message(ex.getMessage())
@@ -48,6 +78,13 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    /**
+     * Generic handler for all unexpected exceptions.
+     * Returns HTTP 500 INTERNAL_SERVER_ERROR.
+     *
+     * @param ex the unexpected exception
+     * @return a structured error response
+     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneric(Exception ex) {

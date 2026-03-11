@@ -13,6 +13,9 @@ import java.util.List;
 
 /**
  * REST controller exposing endpoints for managing Todo items.
+ * <p>
+ * Supports creating todos, retrieving todos (single or multiple),
+ * updating descriptions, and marking todos as DONE or NOT_DONE.
  */
 @RestController
 @RequestMapping("/todos")
@@ -20,10 +23,16 @@ import java.util.List;
 @Slf4j
 public class TodoController {
 
+    /** Service layer handling the business logic for todos. */
     private final TodoService todoService;
 
     /**
-     * Create a new todo item.
+     * Creates a new todo item.
+     * <p>
+     * Endpoint: POST /todos
+     *
+     * @param request the request body containing todo description and optional dueDate
+     * @return the created TodoResponse with HTTP 201 CREATED
      */
     @PostMapping
     public ResponseEntity<TodoResponse> createTodo(@RequestBody TodoRequest request) {
@@ -38,9 +47,14 @@ public class TodoController {
     }
 
     /**
-     * Get todo items.
-     * Default: returns NOT_DONE items only.
-     * If all=true: returns all items.
+     * Retrieves todo items.
+     * <p>
+     * Endpoint: GET /todos
+     * Default: returns NOT_DONE todos only.
+     * If query parameter all=true, returns all todos regardless of status.
+     *
+     * @param all flag indicating whether to return all todos
+     * @return list of TodoResponse objects with HTTP 200 OK
      */
     @GetMapping
     public ResponseEntity<List<TodoResponse>> getTodos(
@@ -52,7 +66,12 @@ public class TodoController {
     }
 
     /**
-     * Get todo by id.
+     * Retrieves a single todo by its ID.
+     * <p>
+     * Endpoint: GET /todos/{id}
+     *
+     * @param id the ID of the todo
+     * @return the TodoResponse with HTTP 200 OK
      */
     @GetMapping("/{id}")
     public ResponseEntity<TodoResponse> getTodo(@PathVariable Long id) {
@@ -63,7 +82,15 @@ public class TodoController {
     }
 
     /**
-     * Update todo description.
+     * Updates the description of a todo.
+     * <p>
+     * Endpoint: PATCH /todos/{id}/description
+     * <p>
+     * Throws PastDueModificationException if the todo is PAST_DUE.
+     *
+     * @param id          the ID of the todo
+     * @param description the new description
+     * @return the updated TodoResponse with HTTP 200 OK
      */
     @PatchMapping("/{id}/description")
     public ResponseEntity<TodoResponse> updateDescription(
@@ -76,7 +103,14 @@ public class TodoController {
     }
 
     /**
-     * Mark todo as DONE.
+     * Marks a todo as DONE.
+     * <p>
+     * Endpoint: PATCH /todos/{id}/done
+     * <p>
+     * Throws PastDueModificationException if the todo is PAST_DUE.
+     *
+     * @param id the ID of the todo
+     * @return the updated TodoResponse with status DONE and HTTP 200 OK
      */
     @PatchMapping("/{id}/done")
     public ResponseEntity<TodoResponse> markDone(@PathVariable Long id) {
@@ -87,7 +121,14 @@ public class TodoController {
     }
 
     /**
-     * Mark todo as NOT_DONE.
+     * Marks a todo as NOT_DONE.
+     * <p>
+     * Endpoint: PATCH /todos/{id}/undone
+     * <p>
+     * Throws PastDueModificationException if the todo is PAST_DUE.
+     *
+     * @param id the ID of the todo
+     * @return the updated TodoResponse with status NOT_DONE and HTTP 200 OK
      */
     @PatchMapping("/{id}/undone")
     public ResponseEntity<TodoResponse> markNotDone(@PathVariable Long id) {
