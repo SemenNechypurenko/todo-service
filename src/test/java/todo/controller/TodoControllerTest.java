@@ -56,7 +56,7 @@ class TodoControllerTest {
         mockMvc.perform(post("/todos")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.description").value("Test"));
     }
 
