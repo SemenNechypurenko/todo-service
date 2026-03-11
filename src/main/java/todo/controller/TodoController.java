@@ -2,6 +2,8 @@ package todo.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import todo.dto.TodoRequest;
 import todo.dto.TodoResponse;
@@ -21,74 +23,77 @@ public class TodoController {
     private final TodoService todoService;
 
     /**
-     * Creates a new todo item.
+     * Create a new todo item.
      */
     @PostMapping
-    public TodoResponse createTodo(@RequestBody TodoRequest request) {
+    public ResponseEntity<TodoResponse> createTodo(@RequestBody TodoRequest request) {
 
-        log.info("Received request to create todo");
+        log.info("Create todo request received");
 
-        return todoService.createTodo(request);
+        TodoResponse response = todoService.createTodo(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     /**
-     * Retrieves todo items.
-     *
-     * default -> NOT_DONE
-     * all=true -> all items
+     * Get todo items.
+     * Default: returns NOT_DONE items only.
+     * If all=true: returns all items.
      */
     @GetMapping
-    public List<TodoResponse> getTodos(
+    public ResponseEntity<List<TodoResponse>> getTodos(
             @RequestParam(defaultValue = "false") boolean all) {
 
-        log.info("Received request to get todos (all={})", all);
+        log.info("Get todos request (all={})", all);
 
-        return todoService.getTodos(all);
+        return ResponseEntity.ok(todoService.getTodos(all));
     }
 
     /**
-     * Retrieves a single todo by id.
+     * Get todo by id.
      */
     @GetMapping("/{id}")
-    public TodoResponse getTodo(@PathVariable Long id) {
+    public ResponseEntity<TodoResponse> getTodo(@PathVariable Long id) {
 
-        log.info("Received request to get todo {}", id);
+        log.info("Get todo by id {}", id);
 
-        return todoService.getTodoById(id);
+        return ResponseEntity.ok(todoService.getTodoById(id));
     }
 
     /**
-     * Updates description.
+     * Update todo description.
      */
     @PatchMapping("/{id}/description")
-    public TodoResponse updateDescription(
+    public ResponseEntity<TodoResponse> updateDescription(
             @PathVariable Long id,
             @RequestParam String description) {
 
-        log.info("Received request to update description for todo {}", id);
+        log.info("Update description for todo {}", id);
 
-        return todoService.updateDescription(id, description);
+        return ResponseEntity.ok(todoService.updateDescription(id, description));
     }
 
     /**
-     * Marks todo as DONE.
+     * Mark todo as DONE.
      */
     @PatchMapping("/{id}/done")
-    public TodoResponse markDone(@PathVariable Long id) {
+    public ResponseEntity<TodoResponse> markDone(@PathVariable Long id) {
 
-        log.info("Received request to mark todo {} as DONE", id);
+        log.info("Mark todo {} as DONE", id);
 
-        return todoService.markDone(id);
+        return ResponseEntity.ok(todoService.markDone(id));
     }
 
     /**
-     * Marks todo as NOT_DONE.
+     * Mark todo as NOT_DONE.
      */
     @PatchMapping("/{id}/undone")
-    public TodoResponse markNotDone(@PathVariable Long id) {
+    public ResponseEntity<TodoResponse> markNotDone(@PathVariable Long id) {
 
-        log.info("Received request to mark todo {} as NOT_DONE", id);
+        log.info("Mark todo {} as NOT_DONE", id);
 
-        return todoService.markNotDone(id);
+        return ResponseEntity.ok(todoService.markNotDone(id));
     }
 }
