@@ -67,6 +67,7 @@ mvn test
 The application can be started using Docker Compose:
 
 ```bash
+docker compose build --no-cache
 docker-compose up
 ```
 
