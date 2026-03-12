@@ -117,6 +117,21 @@ mvn -B clean test
 
 ---
 
+## Environment Variables (Optional)
+
+The service can be configured using environment variables.
+
+If variables are not provided, the application runs with a default in-memory H2 database.
+
+| Variable | Description | Default |
+|--------|-------------|--------|
+| DB_URL | JDBC datasource URL | jdbc:h2:mem:todo-db |
+| DB_USERNAME | Database username | sa |
+| DB_PASSWORD | Database password | empty |
+| DDL_AUTO | Hibernate schema mode | update |
+| H2_CONSOLE_ENABLED | Enable H2 console | true |
+
+
 # REST API
 
 Base URL:
