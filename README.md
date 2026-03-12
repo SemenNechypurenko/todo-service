@@ -33,6 +33,14 @@ If a todo passes its due date, the service automatically marks it as **PAST_DUE*
 - Docker & Docker Compose
 
 ---
+## Getting Started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/SemenNechypurenko/todo-service.git
+cd todo-service
+```
 
 ## How to Build
 
@@ -174,7 +182,7 @@ Response:
   "status": "NOT_DONE",
   "createdAt": "2026-03-10T12:00:00",
   "dueDate": "2030-03-12T10:00:00",
-  "doneAt": null
+  "doneAt": "2026-03-12T12:08:18.2667207"
 }
 ```
 
@@ -198,6 +206,16 @@ Response:
 
 **200 OK**
 
+```json
+{
+  "id": 1,
+  "description": "Buy milk and bread",
+  "status": "NOT_DONE",
+  "createdAt": "2026-03-10T12:00:00",
+  "dueDate": "2026-03-12T10:00:00",
+  "doneAt": null
+}
+
 ---
 
 ## 5. Mark Todo as DONE
@@ -210,6 +228,16 @@ Response:
 
 **200 OK**
 
+```json
+{
+"id": 1,
+"description": "Buy milk and bread",
+"status": "DONE",
+"createdAt": "2026-03-10T12:00:00",
+"dueDate": "2026-03-12T10:00:00",
+"doneAt": null
+}
+
 ---
 
 ## 6. Mark Todo as NOT_DONE
@@ -221,6 +249,16 @@ Marks the todo as not completed.
 Response:
 
 **200 OK**
+
+```json
+{
+"id": 1,
+"description": "Buy milk and bread",
+"status": "NOT_DONE",
+"createdAt": "2026-03-10T12:00:00",
+"dueDate": "2026-03-12T10:00:00",
+"doneAt": null
+}
 
 ---
 
