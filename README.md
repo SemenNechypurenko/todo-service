@@ -32,6 +32,7 @@ If a todo passes its due date, the service automatically marks it as **PAST_DUE*
 - Maven
 - Docker & Docker Compose
 
+
 ---
 ## Getting Started
 
@@ -83,6 +84,35 @@ The API will be available at:
 
 ```
 http://localhost:8080/todos
+```
+
+---
+
+## Continuous Integration (CI)
+
+The project uses **GitHub Actions** for Continuous Integration.
+
+The CI pipeline automatically runs on every:
+
+- push to `master`
+- pull request targeting `master`
+
+The pipeline performs the following steps:
+
+- checks out the repository
+- sets up **Java 17**
+- builds the project
+- runs all tests using Maven
+
+This ensures that all tests pass before code changes are merged into the `master` branch.
+
+CI configuration file: .github/workflows/ci.yml
+
+
+The pipeline runs:
+
+```bash
+mvn -B clean test
 ```
 
 ---
@@ -215,7 +245,7 @@ Response:
   "dueDate": "2026-03-12T10:00:00",
   "doneAt": null
 }
-
+```
 ---
 
 ## 5. Mark Todo as DONE
@@ -237,7 +267,7 @@ Response:
 "dueDate": "2026-03-12T10:00:00",
 "doneAt": null
 }
-
+```
 ---
 
 ## 6. Mark Todo as NOT_DONE
@@ -259,7 +289,7 @@ Response:
 "dueDate": "2026-03-12T10:00:00",
 "doneAt": null
 }
-
+```
 ---
 
 ## 📝 Postman Collection
