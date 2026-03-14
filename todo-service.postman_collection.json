@@ -12,8 +12,6 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"console.log(pm.response.text());\r",
-							"\r",
 							"pm.test(\"[POST /todos] should return 201 CREATED\", function () {\r",
 							"    pm.response.to.have.status(201);\r",
 							"});\r",
@@ -165,7 +163,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\r\n  \"description\": \"Buy milk and bread\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -173,7 +171,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/todos/1/description?description=Buy milk and eggs",
+					"raw": "http://localhost:8080/todos/1/description",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -183,12 +181,6 @@
 						"todos",
 						"1",
 						"description"
-					],
-					"query": [
-						{
-							"key": "description",
-							"value": "Buy milk and eggs"
-						}
 					]
 				}
 			},

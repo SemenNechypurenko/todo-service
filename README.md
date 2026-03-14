@@ -239,15 +239,13 @@ Response:
 
 Updates the description of a todo.
 
-Query parameter:
+Request body:
 
-| Parameter | Description |
-|----------|-------------|
-| description | New todo description (must not be blank) |
-
-Example request:
-
-**PATCH /todos/1/description?description=Buy%20milk%20and%20bread**
+```json
+{
+  "description": "Buy milk and bread"
+}
+```
 
 Response:
 
@@ -316,7 +314,7 @@ A Postman collection is included in the repository to simplify API testing.
 File:
 
 ```
-postman_collection.json
+todo-service.postman_collection.json
 ```
 
 ### How to Use

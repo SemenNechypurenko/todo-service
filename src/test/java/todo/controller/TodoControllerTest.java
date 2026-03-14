@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import todo.dto.TodoRequest;
 import todo.dto.TodoResponse;
+import todo.dto.UpdateDescriptionRequest;
 import todo.exception.GlobalExceptionHandler;
 import todo.model.TodoStatus;
 import todo.service.TodoService;
@@ -143,6 +144,9 @@ class TodoControllerTest {
     @DisplayName("Should update todo description")
     void shouldUpdateDescription() throws Exception {
 
+        UpdateDescriptionRequest request = new UpdateDescriptionRequest();
+        request.setDescription("Updated");
+
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
                 .description("Updated")
@@ -153,7 +157,8 @@ class TodoControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(patch("/todos/1/description")
-                        .param("description", "Updated"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value("Updated"));
     }
@@ -162,8 +167,12 @@ class TodoControllerTest {
     @DisplayName("Should return 400 when updating description with blank value")
     void shouldReturn400WhenUpdatingDescriptionWithBlankValue() throws Exception {
 
+        UpdateDescriptionRequest request = new UpdateDescriptionRequest();
+        request.setDescription("");
+
         mockMvc.perform(patch("/todos/1/description")
-                        .param("description", ""))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 

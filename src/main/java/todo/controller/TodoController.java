@@ -1,7 +1,6 @@
 package todo.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import todo.dto.TodoRequest;
 import todo.dto.TodoResponse;
+import todo.dto.UpdateDescriptionRequest;
 import todo.service.TodoService;
 
 import java.util.List;
@@ -93,21 +93,23 @@ public class TodoController {
      *
      * Endpoint: PATCH /todos/{id}/description
      *
-     * The description parameter is validated to ensure it is not blank.
+     * The request body must contain a non-blank description.
      * Throws PastDueModificationException if the todo is PAST_DUE.
      *
-     * @param id          the ID of the todo
-     * @param description the new description
+     * @param id      the ID of the todo
+     * @param request request body containing the new description
      * @return the updated TodoResponse with HTTP 200 OK
      */
     @PatchMapping("/{id}/description")
     public ResponseEntity<TodoResponse> updateDescription(
             @PathVariable Long id,
-            @RequestParam @NotBlank String description) {
+            @Valid @RequestBody UpdateDescriptionRequest request) {
 
         log.info("Update description for todo {}", id);
 
-        return ResponseEntity.ok(todoService.updateDescription(id, description));
+        return ResponseEntity.ok(
+                todoService.updateDescription(id, request.getDescription())
+        );
     }
 
     /**
