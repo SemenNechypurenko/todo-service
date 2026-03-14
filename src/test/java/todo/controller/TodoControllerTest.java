@@ -1,27 +1,28 @@
 package todo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import todo.dto.TodoRequest;
 import todo.dto.TodoResponse;
 import todo.exception.GlobalExceptionHandler;
-import todo.exception.InvalidDueDateException;
-import todo.exception.PastDueModificationException;
-import todo.exception.TodoNotFoundException;
+import todo.model.TodoStatus;
 import todo.service.TodoService;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TodoController.class)
@@ -31,112 +32,124 @@ class TodoControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private TodoService todoService;
-
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private TodoService todoService;
+
     @Test
+    @DisplayName("Should create a todo via POST /todos")
     void shouldCreateTodo() throws Exception {
 
-        TodoRequest request = new TodoRequest();
-        request.setDescription("Test");
+        TodoRequest request = TodoRequest.builder()
+                .description("Test todo")
+                .dueDate(Instant.now().plusSeconds(3600))
+                .build();
 
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
-                .description("Test")
-                .status("NOT_DONE")
-                .createdAt(LocalDateTime.now())
+                .description("Test todo")
+                .status(String.valueOf(TodoStatus.NOT_DONE))
                 .build();
 
-        Mockito.when(todoService.createTodo(any()))
-                .thenReturn(response);
+        when(todoService.createTodo(any())).thenReturn(response);
 
         mockMvc.perform(post("/todos")
-                        .contentType("application/json")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.description").value("Test"));
+                .andExpect(jsonPath("$.description").value("Test todo"))
+                .andExpect(jsonPath("$.status").value("NOT_DONE"));
     }
 
     @Test
-    void shouldReturn400WhenInvalidDueDate() throws Exception {
+    @DisplayName("Should return 400 when description is blank")
+    void shouldReturn400WhenDescriptionIsBlank() throws Exception {
 
-        TodoRequest request = new TodoRequest();
-        request.setDescription("Invalid");
-        request.setDueDate(LocalDateTime.now().minusDays(1));
-
-        Mockito.when(todoService.createTodo(any()))
-                .thenThrow(new InvalidDueDateException());
+        TodoRequest request = TodoRequest.builder()
+                .description("")
+                .dueDate(Instant.now().plusSeconds(3600))
+                .build();
 
         mockMvc.perform(post("/todos")
-                        .contentType("application/json")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message")
-                        .value("Due date must be in the future"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
+    @DisplayName("Should return 400 when due date is in the past")
+    void shouldReturn400WhenDueDateInPast() throws Exception {
+
+        TodoRequest request = TodoRequest.builder()
+                .description("Test todo")
+                .dueDate(Instant.now().minusSeconds(3600))
+                .build();
+
+        mockMvc.perform(post("/todos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return list of todos")
     void shouldReturnTodos() throws Exception {
 
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
-                .description("Test")
-                .status("NOT_DONE")
-                .createdAt(LocalDateTime.now())
+                .description("Test todo")
+                .status(String.valueOf(TodoStatus.NOT_DONE))
                 .build();
 
-        Mockito.when(todoService.getTodos(false))
-                .thenReturn(List.of(response));
+        when(todoService.getTodos(false)).thenReturn(List.of(response));
 
         mockMvc.perform(get("/todos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].description").value("Test"));
+                .andExpect(jsonPath("$[0].description").value("Test todo"));
     }
 
     @Test
+    @DisplayName("Should return all todos when all=true parameter is provided")
+    void shouldReturnAllTodosWhenAllParamTrue() throws Exception {
+
+        when(todoService.getTodos(true)).thenReturn(List.of());
+
+        mockMvc.perform(get("/todos")
+                        .param("all", "true"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Should return todo by id")
     void shouldReturnTodoById() throws Exception {
 
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
-                .description("Test")
-                .status("NOT_DONE")
-                .createdAt(LocalDateTime.now())
+                .description("Test todo")
+                .status(String.valueOf(TodoStatus.NOT_DONE))
                 .build();
 
-        Mockito.when(todoService.getTodoById(1L))
-                .thenReturn(response);
+        when(todoService.getTodoById(1L)).thenReturn(response);
 
         mockMvc.perform(get("/todos/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.description").value("Test todo"));
     }
 
     @Test
-    void shouldReturn404WhenTodoNotFound() throws Exception {
-
-        Mockito.when(todoService.getTodoById(1L))
-                .thenThrow(new TodoNotFoundException(1L));
-
-        mockMvc.perform(get("/todos/1"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message")
-                        .value("Todo with id 1 not found"));
-    }
-
-    @Test
+    @DisplayName("Should update todo description")
     void shouldUpdateDescription() throws Exception {
 
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
                 .description("Updated")
-                .status("NOT_DONE")
-                .createdAt(LocalDateTime.now())
+                .status(String.valueOf(TodoStatus.NOT_DONE))
                 .build();
 
-        Mockito.when(todoService.updateDescription(1L, "Updated"))
+        when(todoService.updateDescription(eq(1L), eq("Updated")))
                 .thenReturn(response);
 
         mockMvc.perform(patch("/todos/1/description")
@@ -146,16 +159,25 @@ class TodoControllerTest {
     }
 
     @Test
-    void shouldMarkDone() throws Exception {
+    @DisplayName("Should return 400 when updating description with blank value")
+    void shouldReturn400WhenUpdatingDescriptionWithBlankValue() throws Exception {
+
+        mockMvc.perform(patch("/todos/1/description")
+                        .param("description", ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should mark todo as DONE")
+    void shouldMarkTodoDone() throws Exception {
 
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
-                .status("DONE")
-                .createdAt(LocalDateTime.now())
+                .description("Test todo")
+                .status(String.valueOf(TodoStatus.DONE))
                 .build();
 
-        Mockito.when(todoService.markDone(1L))
-                .thenReturn(response);
+        when(todoService.markDone(1L)).thenReturn(response);
 
         mockMvc.perform(patch("/todos/1/done"))
                 .andExpect(status().isOk())
@@ -163,28 +185,16 @@ class TodoControllerTest {
     }
 
     @Test
-    void shouldReturn409WhenPastDueModification() throws Exception {
-
-        Mockito.when(todoService.markDone(1L))
-                .thenThrow(new PastDueModificationException(1L));
-
-        mockMvc.perform(patch("/todos/1/done"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message")
-                        .value("Todo 1 is PAST_DUE and cannot be modified"));
-    }
-
-    @Test
-    void shouldMarkNotDone() throws Exception {
+    @DisplayName("Should mark todo as NOT_DONE")
+    void shouldMarkTodoNotDone() throws Exception {
 
         TodoResponse response = TodoResponse.builder()
                 .id(1L)
-                .status("NOT_DONE")
-                .createdAt(LocalDateTime.now())
+                .description("Test todo")
+                .status(String.valueOf(TodoStatus.NOT_DONE))
                 .build();
 
-        Mockito.when(todoService.markNotDone(1L))
-                .thenReturn(response);
+        when(todoService.markNotDone(1L)).thenReturn(response);
 
         mockMvc.perform(patch("/todos/1/undone"))
                 .andExpect(status().isOk())

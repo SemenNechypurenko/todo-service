@@ -12,6 +12,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"console.log(pm.response.text());\r",
+							"\r",
 							"pm.test(\"[POST /todos] should return 201 CREATED\", function () {\r",
 							"    pm.response.to.have.status(201);\r",
 							"});\r",
@@ -39,7 +41,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"description\": \"Buy groceries\",\r\n  \"dueDate\": \"2030-04-10T18:00:00\"\r\n}\r\n",
+					"raw": "{\r\n  \"description\": \"Buy groceries\",\r\n  \"dueDate\": \"2030-04-10T18:00:00Z\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

@@ -3,7 +3,7 @@ package todo.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * JPA Entity representing a Todo item stored in the database.
@@ -45,19 +45,19 @@ public class TodoItem {
     /**
      * Timestamp when the todo was created.
      */
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     /**
      * Optional due date of the todo item.
      * <p>
      * Can be null if not set.
      */
-    private LocalDateTime dueDate;
+    private Instant dueDate;
 
     /**
      * Timestamp when the todo was marked as done.
      * <p>
      * Null if the todo is not completed yet.
      */
-    private LocalDateTime doneAt;
+    private Instant doneAt;
 }

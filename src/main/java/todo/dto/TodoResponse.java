@@ -2,7 +2,7 @@ package todo.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Data Transfer Object (DTO) representing a response for a Todo item.
@@ -28,27 +28,21 @@ public class TodoResponse {
 
     /**
      * Current status of the todo item.
-     * <p>
-     * Possible values: "NOT_DONE", "DONE", "PAST_DUE".
      */
     private String status;
 
     /**
      * Timestamp when the todo was created.
      */
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     /**
      * Optional due date of the todo item.
-     * <p>
-     * Can be null if not set.
      */
-    private LocalDateTime dueDate;
+    private Instant dueDate;
 
     /**
      * Timestamp when the todo was marked as done.
-     * <p>
-     * Null if the todo is not completed yet.
      */
-    private LocalDateTime doneAt;
+    private Instant doneAt;
 }

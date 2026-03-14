@@ -153,7 +153,7 @@ Request body:
 ```json
 {
   "description": "Buy milk",
-  "dueDate": "2026-03-12T10:00:00"
+  "dueDate": "2026-03-12T10:00:00Z"
 }
 ```
 
@@ -172,8 +172,8 @@ Response:
   "id": 1,
   "description": "Buy milk",
   "status": "NOT_DONE",
-  "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2026-03-12T10:00:00",
+  "createdAt": "2026-03-10T12:00:00Z",
+  "dueDate": "2026-03-12T10:00:00Z",
   "doneAt": null
 }
 ```
@@ -201,8 +201,8 @@ Response:
     "id": 1,
     "description": "Buy milk",
     "status": "NOT_DONE",
-    "createdAt": "2026-03-10T12:00:00",
-    "dueDate": "2030-03-12T10:00:00",
+    "createdAt": "2026-03-10T12:00:00Z",
+    "dueDate": "2030-03-12T10:00:00Z",
     "doneAt": null
   }
 ]
@@ -224,10 +224,10 @@ Response:
 {
   "id": 1,
   "description": "Buy milk",
-  "status": "NOT_DONE",
-  "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2030-03-12T10:00:00",
-  "doneAt": "2026-03-12T12:08:18.2667207"
+  "status": "DONE",
+  "createdAt": "2026-03-10T12:00:00Z",
+  "dueDate": "2030-03-12T10:00:00Z",
+  "doneAt": "2026-03-12T12:08:18Z"
 }
 ```
 
@@ -239,13 +239,15 @@ Response:
 
 Updates the description of a todo.
 
-Request body:
+Query parameter:
 
-```json
-{
-  "description": "Buy milk and bread"
-}
-```
+| Parameter | Description |
+|----------|-------------|
+| description | New todo description (must not be blank) |
+
+Example request:
+
+**PATCH /todos/1/description?description=Buy%20milk%20and%20bread**
 
 Response:
 
@@ -256,8 +258,8 @@ Response:
   "id": 1,
   "description": "Buy milk and bread",
   "status": "NOT_DONE",
-  "createdAt": "2026-03-10T12:00:00",
-  "dueDate": "2026-03-12T10:00:00",
+  "createdAt": "2026-03-10T12:00:00Z",
+  "dueDate": "2026-03-12T10:00:00Z",
   "doneAt": null
 }
 ```
@@ -275,12 +277,12 @@ Response:
 
 ```json
 {
-"id": 1,
-"description": "Buy milk and bread",
-"status": "DONE",
-"createdAt": "2026-03-10T12:00:00",
-"dueDate": "2026-03-12T10:00:00",
-"doneAt": null
+  "id": 1,
+  "description": "Buy milk and bread",
+  "status": "DONE",
+  "createdAt": "2026-03-10T12:00:00Z",
+  "dueDate": "2026-03-12T10:00:00Z",
+  "doneAt": "2026-03-10T12:30:00Z"
 }
 ```
 ---
@@ -297,12 +299,12 @@ Response:
 
 ```json
 {
-"id": 1,
-"description": "Buy milk and bread",
-"status": "NOT_DONE",
-"createdAt": "2026-03-10T12:00:00",
-"dueDate": "2026-03-12T10:00:00",
-"doneAt": null
+  "id": 1,
+  "description": "Buy milk and bread",
+  "status": "NOT_DONE",
+  "createdAt": "2026-03-10T12:00:00Z",
+  "dueDate": "2026-03-12T10:00:00Z",
+  "doneAt": null
 }
 ```
 ---

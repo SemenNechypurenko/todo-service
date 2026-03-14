@@ -1,7 +1,10 @@
 package todo.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import todo.dto.ErrorResponse;
 
@@ -94,6 +97,56 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message("Internal server error")
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * Handles validation errors for @Valid request bodies.
+     * Returns HTTP 400 BAD_REQUEST.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidation(MethodArgumentNotValidException ex) {
+
+        FieldError error = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        String message = error != null
+                ? error.getField() + " " + error.getDefaultMessage()
+                : "Validation error";
+
+        log.warn("Validation error: {}", message);
+
+        return ErrorResponse.builder()
+                .message(message)
+                .status(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * Handles validation errors for request parameters and path variables.
+     * Returns HTTP 400 BAD_REQUEST.
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConstraintViolation(ConstraintViolationException ex) {
+
+        String message = ex.getConstraintViolations()
+                .stream()
+                .findFirst()
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .orElse("Validation error");
+
+        log.warn("Constraint violation: {}", message);
+
+        return ErrorResponse.builder()
+                .message(message)
+                .status(HttpStatus.BAD_REQUEST.value())
                 .timestamp(LocalDateTime.now())
                 .build();
     }

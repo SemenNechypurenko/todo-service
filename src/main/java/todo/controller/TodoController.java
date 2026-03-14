@@ -1,9 +1,12 @@
 package todo.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import todo.dto.TodoRequest;
 import todo.dto.TodoResponse;
@@ -13,7 +16,7 @@ import java.util.List;
 
 /**
  * REST controller exposing endpoints for managing Todo items.
- * <p>
+ *
  * Supports creating todos, retrieving todos (single or multiple),
  * updating descriptions, and marking todos as DONE or NOT_DONE.
  */
@@ -21,6 +24,7 @@ import java.util.List;
 @RequestMapping("/todos")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class TodoController {
 
     /** Service layer handling the business logic for todos. */
@@ -28,14 +32,16 @@ public class TodoController {
 
     /**
      * Creates a new todo item.
-     * <p>
+     *
      * Endpoint: POST /todos
+     *
+     * Request body is validated using Jakarta Bean Validation.
      *
      * @param request the request body containing todo description and optional dueDate
      * @return the created TodoResponse with HTTP 201 CREATED
      */
     @PostMapping
-    public ResponseEntity<TodoResponse> createTodo(@RequestBody TodoRequest request) {
+    public ResponseEntity<TodoResponse> createTodo(@Valid @RequestBody TodoRequest request) {
 
         log.info("Create todo request received");
 
@@ -48,9 +54,10 @@ public class TodoController {
 
     /**
      * Retrieves todo items.
-     * <p>
+     *
      * Endpoint: GET /todos
-     * Default: returns NOT_DONE todos only.
+     *
+     * Default behaviour: returns NOT_DONE todos only.
      * If query parameter all=true, returns all todos regardless of status.
      *
      * @param all flag indicating whether to return all todos
@@ -67,7 +74,7 @@ public class TodoController {
 
     /**
      * Retrieves a single todo by its ID.
-     * <p>
+     *
      * Endpoint: GET /todos/{id}
      *
      * @param id the ID of the todo
@@ -83,9 +90,10 @@ public class TodoController {
 
     /**
      * Updates the description of a todo.
-     * <p>
+     *
      * Endpoint: PATCH /todos/{id}/description
-     * <p>
+     *
+     * The description parameter is validated to ensure it is not blank.
      * Throws PastDueModificationException if the todo is PAST_DUE.
      *
      * @param id          the ID of the todo
@@ -95,7 +103,7 @@ public class TodoController {
     @PatchMapping("/{id}/description")
     public ResponseEntity<TodoResponse> updateDescription(
             @PathVariable Long id,
-            @RequestParam String description) {
+            @RequestParam @NotBlank String description) {
 
         log.info("Update description for todo {}", id);
 
@@ -104,9 +112,12 @@ public class TodoController {
 
     /**
      * Marks a todo as DONE.
-     * <p>
+     *
      * Endpoint: PATCH /todos/{id}/done
-     * <p>
+     *
+     * The operation is idempotent. If the todo is already DONE,
+     * the existing doneAt timestamp is preserved.
+     *
      * Throws PastDueModificationException if the todo is PAST_DUE.
      *
      * @param id the ID of the todo
@@ -122,9 +133,9 @@ public class TodoController {
 
     /**
      * Marks a todo as NOT_DONE.
-     * <p>
+     *
      * Endpoint: PATCH /todos/{id}/undone
-     * <p>
+     *
      * Throws PastDueModificationException if the todo is PAST_DUE.
      *
      * @param id the ID of the todo
