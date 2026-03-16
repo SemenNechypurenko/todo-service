@@ -1,6 +1,7 @@
 package todo.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import todo.dto.ErrorResponse;
 
-import java.time.LocalDateTime;
+import java.time.Clock;
 
 /**
  * Global exception handler for the Todo Service.
@@ -19,7 +20,10 @@ import java.time.LocalDateTime;
  */
 @RestControllerAdvice
 @Slf4j
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final Clock clock;
 
     /**
      * Handles cases where a todo with the specified ID is not found.
@@ -37,7 +41,7 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.NOT_FOUND.value())
-                .timestamp(LocalDateTime.now())
+                .timestamp(clock.instant())
                 .build();
     }
 
@@ -57,7 +61,7 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.CONFLICT.value())
-                .timestamp(LocalDateTime.now())
+                .timestamp(clock.instant())
                 .build();
     }
 
@@ -77,7 +81,7 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
-                .timestamp(LocalDateTime.now())
+                .timestamp(clock.instant())
                 .build();
     }
 
@@ -97,7 +101,7 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message("Internal server error")
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .timestamp(LocalDateTime.now())
+                .timestamp(clock.instant())
                 .build();
     }
 
@@ -124,7 +128,7 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message(message)
                 .status(HttpStatus.BAD_REQUEST.value())
-                .timestamp(LocalDateTime.now())
+                .timestamp(clock.instant())
                 .build();
     }
 
@@ -147,7 +151,7 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
                 .message(message)
                 .status(HttpStatus.BAD_REQUEST.value())
-                .timestamp(LocalDateTime.now())
+                .timestamp(clock.instant())
                 .build();
     }
 }

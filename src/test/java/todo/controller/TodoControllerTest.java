@@ -16,6 +16,7 @@ import todo.exception.GlobalExceptionHandler;
 import todo.model.TodoStatus;
 import todo.service.TodoService;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 
@@ -38,6 +39,9 @@ class TodoControllerTest {
 
     @MockBean
     private TodoService todoService;
+
+    @MockBean
+    private Clock clock;
 
     @Test
     @DisplayName("Should create a todo via POST /todos")

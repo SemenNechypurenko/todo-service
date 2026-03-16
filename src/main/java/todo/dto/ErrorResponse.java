@@ -3,7 +3,7 @@ package todo.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Data Transfer Object (DTO) representing a structured error response
@@ -29,5 +29,5 @@ public class ErrorResponse {
     /**
      * The timestamp indicating when the error occurred.
      */
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 }
